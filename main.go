@@ -2,12 +2,21 @@ package main
 
 import "net/http"
 
+func healtzHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
+}
+
 func main() {
-	handler := http.NewServeMux()
-	handler.Handle("/", http.FileServer(http.Dir(".")))
+	mux := http.NewServeMux()
+
+	mux.Handle("/app/", http.StripPrefix("/app", http.FileServer(http.Dir("."))))
+	mux.Handle("/assets/", http.FileServer(http.Dir("assets/")))
+	mux.HandleFunc("/healthz", healtzHandler)
 
 	server := &http.Server{
-		Handler: handler,
+		Handler: mux,
 		Addr:    ":8080",
 	}
 
